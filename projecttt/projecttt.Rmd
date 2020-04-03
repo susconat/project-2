@@ -1,0 +1,152 @@
+---
+title: "Data wrangeling Bootcamp with dplry"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Introduction
+Data wrangeling is the process of transforming and mapping data from one "raw" data form into another format with the intent of making it more appropriate and valuable for a variety of downstream purposes such as analytics. Data wrangeling is very useful in coding especially when dealing with a large data set. For the purpose of displaying how one uses R functions to wrangle data we will be using the Fandango data set from the fivethirtyeight package. The Fandango data set is a data frame with 146 rows representing movies and 23 variables. These 23 variables range from the film name, year, and varies ratings. The file will take the reader on a step by step tutorial on how to data wrangle. 
+
+### Packages needed
+
+packages that will be needed (run code below)
+
+```{r packages, exercise=TRUE}
+library(tidyverse) # Automatically loads ggplot2 and dplyr
+library(fivethirtyeight)
+```
+
+### Terms of Data Wrangling 
+
+dplyr is a good package for data wrangling. It is simple for helping to understand and work through manupulating data. One of the greatest advantages of this package is the pipe function. You can use the pipe function “%>%” to write a pipeline combine different functions in R. You can even save "piped" operations as a new data frame. 
+
+Personally I know it can be confusing all of the words used with the pip operation in dplyr so to make things easier dplyr provides a grammar for data transformation.
+Five verbs for working with data in a data frame
+- select(): takes (selects) a subset of columns (variables)
+- filter(): take a subset of rows (observations, cases, individuals), a way to filter the data to only see what you are looking for. 
+- mutate(): add or modify existing columns (can even use this function to compute new variables through a provided equation)
+- arrange(): sort rows (descending or ascending order, etc.)
+- summarize(): aggregate data across rows (e.g., grouped means)
+### Select
+*First we will try to use the select funtion say you just wanted to know the name of the movie and the year of the film, and its rotten tomato score. you would write the pipline as below* 
+
+Run Code
+```{r select, exercise=TRUE, exercise.lines = 5}
+movie_year = fandango %>%
+  select(film, year, rottentomatoes)
+movie_year
+```
+it displays all 146 movies the year or the film and the rotten tomatoe score, pretty cool right? but 146 rows is still a lot of data.
+
+### Filter
+
+*Next the filter function allows you to take teh data that you selected and filter it to take a subset of rows to only see what you are looking for. Filter can be used alone or in conjunction with the select function.*
+
+Run Code
+```{r Filter, exercise=TRUE, exercise.lines = 5}
+below_fifty = fandango %>%
+  select(film, year, rottentomatoes) %>%
+  filter(rottentomatoes < 50 )
+below_fifty
+```
+The table displays the year and the film name of all movies with rotten tomatoe scores below 50 (on a scale of 1-100). Filter can be used also to filter by categoricol variables. For instance if I wanted to just see the films made in year 2014 I would code
+
+```{r filter_cat, exercise=TRUE, exercise.lines = 5}
+movieyear = fandango %>%
+  select(film, year) %>%
+  filter(year == "2014" )
+movieyear
+```
+### Mutate 
+
+*Mutate function can be used to create a new column for you data set. For exsample there are alot of ratings within the data set so say I wanted to combine as many of the ratings as I could (provded they are all out of the same scale) and see the average rating of the movie. I would code*
+Run Code
+```{r mutate, exercise=TRUE, exercise.lines = 6}
+average_rating = fandango %>%
+  mutate(overall_rating = ((rt_norm + rt_user_norm + metacritic_norm + metacritic_user_nom + imdb_norm)/5)) %>%
+  select(film, overall_rating)
+
+average_rating
+```
+Ths produces an avage rating out of a scale of 5 for each film. 
+
+### Arrange and Join 
+*If we then wanted to view the data to see what top 5 movies have the best rating. We would arrange the data in descedning order but first we would like to combine the overall average data to the original datat set and then view top 5. there are various types of joins INNER JOIN gets all records that are common between both tables based on the supplied. LEFT JOIN gets all records from the LEFT linked and the related record from the right table ,but if you have selected some columns from the RIGHT table, if there is no related records, these columns will contain NULL. RIGHT JOIN is like the above but gets all records in the RIGHT table. FULL JOIN gets all records from both tables and puts NULL in the columns where related records do not exist in the opposite table. For the purpose of this excercise we want to use left join to join the average rating table to the fandango table* 
+
+*When using the arrange function alone it will automatically arrange it in ascedning order based off of the parameters you give in the perathesis. To arrange in descending order You would add on the following code from the previos section. *
+
+Run Code
+```{r joinnarrange, exercise=TRUE, exercise.lines = 14}
+
+average_rating = fandango %>%
+  mutate(overall_rating = ((rt_norm + rt_user_norm + metacritic_norm + metacritic_user_nom + imdb_norm)/5)) %>%
+  select(film, overall_rating)
+
+Top_moviess = fandango %>%
+  left_join(average_rating, by = "film")
+
+Tip_movies = Top_moviess %>%
+  arrange(desc(overall_rating)) %>%
+  select(film, overall_rating) %>%
+  top_n(5, wt = overall_rating)
+
+Tip_movies
+
+```
+Displays the top 5 movies with respects to their overall avaerage rating.
+
+### Summerize and Group by 
+Another step in data wrangeling is the summerize and group by function. summarize() and group_by() allow us to make calculations and comparisons. summarize() (with or without group_by()) collapses the data into rows based on summary statistics.The important step in summarize() is specifying how we want to reduce the data to a single set of summary statistics (for exsample by mean, median, max, IQR ) 
+*Lets say you wanted to group the movies by year to see which movies had better ratings, but in order to keep in non bias you also want to include the amount of votes that year got total for each imbd movie rating just for compairon.* 
+Run Code
+```{r summerize, exercise=TRUE, exercise.lines = 7}
+twoyears = fandango %>%
+  group_by(year) %>%
+  summarise(imdb_rating = mean(imdb), Total_voters = sum(imdb_user_vote_count)) %>%
+  select(year, Total_voters, imdb_rating)
+twoyears
+```
+The imdb rating is on a scale of 0-10. and while the year 2015 had 4 times as many voters they still had a lower imdb rating. Something that can help explain this is the response bias that is an issue involved in indiviuals filling out surveys. those who experiencd a bad time are more likely to leave an awful reviw than that of a person who enjoyed their time. 
+
+## Bringing it All Together
+
+### Exercise with Hint
+
+*Here's an exercise where we walk through teh entire data wrangeling process from start to finish using as many functions as the data needs.*
+
+Modify the following code to limit the number of rows printed to 5:
+
+```{r full_excercise, exercise=TRUE, exercise.lines = 725}
+
+```
+
+
+### Quiz
+
+*A short vocab quiz to help disguish when to use join, inner join, and left join, as it can be confusin at times and I constanly am worrying if I chose the righ join for my data*
+
+Some questions to verify that you understand the purposes of various base and recommended R packages:
+
+```{r quiz}
+quiz(
+  question("Which Join Would not return values if the vlalues in table 1 do not match the Values in table 2?",
+    answer("Left Join"),
+    answer("Right Join"),
+    answer("Inner Join", correct = TRUE),
+    answer("Full Join")
+  ),
+  question("Which Join(s) return all rows in Table1, and all columns from Table1 and Table2. Rows in Table1 with no match in Table2 will have NA values in the new columns?",
+    answer("Left Join", correct = TRUE),
+    answer("Inner Join"),
+    answer("Full Join", correct = TRUE),
+    answer("Right Join", correct = TRUE), allow_retry = TRUE
+  )
+)
+```
+
