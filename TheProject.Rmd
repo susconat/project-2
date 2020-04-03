@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 ## Data Wrangling
-Data wrangling is the process of transforming and mapping data from one “raw” data form into another format with the intent of making it more appropriate and valuable for a variety of downstream purposes such as analytic s. Data wrangling is very useful in coding, especially when dealing with a large data set. To display how one uses R functions to wrangle data, we will be using the Fandango data set from the FiveThirtyEight package. The Fandango data set is a data frame with 146 rows representing movies and 23 variables. These 23 variables range from the film name, year, and various ratings from different sources. This file will take the reader on a step by step tutorial on how to data wrangle.
+### By Natalie Susco and Sophie Panagrossi
+Data wrangling is the process of transforming and mapping data from one “raw” data form into another format with the intent of making it more appropriate and valuable for a variety of downstream purposes such as analytic s. Data wrangling is very useful in coding, especially when dealing with a large data set. To display how one uses R functions to wrangle data, we will be using the Fandango data set from the FiveThirtyEight package. The Fandango data set is a data frame with 146 rows representing movies and 23 variables. These 23 variables range from the film name, year, and various ratings from different sources some on similar scales. This file will take the reader on a step by step tutorial on how to data wrangle.
 
 ### Packages needed
 
@@ -30,13 +31,22 @@ dplyr is an excellent package for data wrangling. It is simple for helping to un
 I know it can be confusing all of the words used with the pipe operation in dplyr, so to make things easier, dplyr provides a grammar for data transformation. 
 
 Five verbs for working with data in a data frame:
+
 - select(): take (selects) a subset of columns (variables) 
+
 - filter(): take a subset of rows (observations, cases, individuals), a way to filter the data to only see what you are looking for. 
-- mutate(): add or modify existing columns (can even use this function to compute new variables through a provided equation) 
-- arrange(): sort rows (descending or ascending order, etc.) 
-- summarize(): aggregate data across rows (e.g., grouped means)
+
+- mutate(): add or modify existing columns (can even use this function to compute new variables through a provided equation). 
+
+- arrange(): sort rows (descending or ascending order, etc.). 
+
+- summarize(): aggregate data across rows (grouped means together).
+
+
 ### Select
-*First, we will try to use the select function. Say you just wanted to know the name of the movie and the year of the film, and its rotten tomato score. You would write the pipeline as below:* 
+
+*First, we will try to use the select() function. Say you just wanted to know the name of the movie and the year of the film, and its rotten tomato score. You would write the pipeline as below:* 
+
 
 Run Code
 ```{r select, exercise=TRUE, exercise.lines = 5}
@@ -48,7 +58,7 @@ It displays all 146 movies the year or the film and the rotten tomato score, pre
 
 ### Filter
 
-*Next, the filter function allows you to take the data that you selected and filter it to take a subset of rows to only see what you are looking for. The filter function can be used alone or in conjunction with the select function*
+*Next, the filter() function which allows you to take the data that you selected and filter it to take a subset of rows. To only see what you are looking for. The filter function can be used alone or in conjunction with the select function*
 
 Run Code
 ```{r Filter, exercise=TRUE, exercise.lines = 5}
@@ -59,6 +69,8 @@ below_fifty
 ```
 The table displays the year and the film name of all movies with rotten tomatoes scores below 50. The filter function can also be used to filter by categorical variables. For instance, if I wanted just to see the films made in the year 2014, I would code:
 
+
+Run Code
 ```{r filter_cat, exercise=TRUE, exercise.lines = 5}
 movieyear = fandango %>%
   select(film, year) %>%
@@ -67,7 +79,9 @@ movieyear
 ```
 ### Mutate 
 
-*Mutate function can be used to create a new column for your data set. For example, there are a lot of ratings within the data set, so say I wanted to combine as many of the ratings as I could (provided they are all out of the same scale) and see the average rating of the movie. I would:*
+*Mutate() function can be used to create a new column for your data set. For example, there are a lot of ratings within the data set, so say I wanted to combine as many of the ratings as I could (provided they are all out of the same scale) and see the average rating of the movie. I would:*
+
+
 Run Code
 ```{r mutate, exercise=TRUE, exercise.lines = 6}
 average_rating = fandango %>%
@@ -79,20 +93,24 @@ average_rating
 This produces an average rating out of a scale of 5 for each film.
 
 ### Arrange and Join 
-*If we then wanted to view the data to see what top 5 movies have the best rating. We would arrange the data in descending order, but first, we would like to combine the overall average data to the original data set and then view the top 5. There are various wasy to join data thourgh the use of joins. Types of joins: INNER JOIN-gets all records that are common between both tables based on the supplied. LEFT JOIN-gets all records from the LEFT linked and the related record from the right table, but if you have selected some columns from the RIGHT table, if there are no related records, these columns will contain NULL. RIGHT JOIN is like the above but gets all records in the RIGHT table. FULL JOIN-gets all records from both tables and puts NULL in the columns where related records do not exist in the opposite table. For this exercise, we want to use left join to join the average rating table to the fandango table* 
+*If we then wanted to view the data to see what top 5 movies have the best overall rating. We would arrange the data in descending order, but first, we need to combine the overall average rating to the original data set and then view the top 5. There are various way to join data thourgh the use of joins.*
 
-*When using the arrange function alone, it will automatically arrange it in ascending order based on the parameters you give in the parenthesis. To arrange in descending order, You would add on the following code from the previous section. *
+Types of joins: INNER JOIN-gets all records that are common between both tables based on the supplied. LEFT JOIN-gets all records from the LEFT linked and the related record from the right table, but if you have selected some columns from the RIGHT table, if there are no related records, these columns will contain NULL. RIGHT JOIN is like the above but gets all records in the RIGHT table. FULL JOIN-gets all records from both tables and puts NULL in the columns where related records do not exist in the opposite table. 
+
+*For this exercise, we want to use left join to join the average rating table to the fandango table. When using the arrange function alone, it will automatically arrange it in ascending order based on the parameters you give in the parenthesis. To arrange in descending order, You would add on the following*
+
 
 Run Code
-```{r oinnarrangee, exercise=TRUE, exercise.lines = 14}
+```{r oiiinnarrangee, exercise=TRUE, exercise.lines = 14}
 
+# Previous code from section above
 average_rating = fandango %>%
   mutate(overall_rating = ((rt_norm + rt_user_norm + metacritic_norm + metacritic_user_nom + imdb_norm)/5)) %>%
   select(film, overall_rating)
-# added code follows
+# added code to use join follows
 Top_moviess = fandango %>%
   left_join(average_rating, by = "film")
-
+# added code to use arrange follows
 Tip_movies = Top_moviess %>%
   arrange(desc(overall_rating)) %>%
   select(film, overall_rating) %>%
@@ -105,7 +123,10 @@ Displays the top 5 movies with respects to their overall average rating.
 
 ### Summarize and Group by 
 Another step in data wrangling is the summarize and group by function. summarize() and group_by() allow us to make calculations and comparisons. summarize() (with or without group_by()) collapses the data into rows based on summary statistics.The important step in summarize() is specifying how we want to reduce the data to a single set of summary statistics (for example, by mean, median, max, IQR ). 
+
 *Let's say you wanted to group the movies by year to see which movies had better ratings, but to keep in non-bias, you also want to include the number of votes that year got total for each movie rating just for comparison.* 
+
+
 Run Code
 ```{r summerize, exercise=TRUE, exercise.lines = 7}
 twoyears = fandango %>%
@@ -147,11 +168,13 @@ ggplot(data = data_wrangling_fandango, aes(x = fandango_votes, y = percent_diffe
 ```
 We noticed that all top 10 highest voted movies had a low difference, three of the movies not having a difference at all. The highest percent difference was 25%, which is still a very low difference. In the graph it looks like that the more percent difference is with a lower amount of votes, which is unexpected. We assumed in the beginning that the more votes the bigger the difference would be. We can conclude that the amount of votes does not affect the percent difference between the two rating styles of Fandango. 
 
+### Conclusion
+Data Wrangling can be hard to understand at first but the benefits are well worth the time. The process of cleaning and structuring raw data into a desired format allows for better decision making in less time. Using dplyr and all of the functions available to you in the tidyverse package will transform the way you look at data. This may allow you to see something that was not there before. 
+
 ### Quiz
 
 *A short vocab quiz to help distinguish when to use join, inner join, and left join, as it can be confusing at times and I constantly am worrying if I chose the right join for my data*
 
-Some questions to verify that you understand the purposes of various base and recommended R packages:
 
 ```{r quiz}
 quiz(
