@@ -1,5 +1,5 @@
 ---
-title: "Tutorial"
+title: "Data Wrangling Boot camp"
 output: learnr::tutorial
 runtime: shiny_prerendered
 ---
@@ -12,13 +12,13 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 ## Data Wrangling
-Data wrangling is the process of transforming and mapping data from one “raw” data form into another format with the intent of making it more appropriate and valuable for a variety of downstream purposes such as analytics. Data wrangling is very useful in coding, especially when dealing with a large data set. To display how one uses R functions to wrangle data, we will be using the Fandango data set from the FiveThirtyEight package. The Fandango data set is a data frame with 146 rows representing movies and 23 variables. These 23 variables range from the film name, year, and various ratings. The file will take the reader on a step by step tutorial on how to data wrangle.
+Data wrangling is the process of transforming and mapping data from one “raw” data form into another format with the intent of making it more appropriate and valuable for a variety of downstream purposes such as analytic s. Data wrangling is very useful in coding, especially when dealing with a large data set. To display how one uses R functions to wrangle data, we will be using the Fandango data set from the FiveThirtyEight package. The Fandango data set is a data frame with 146 rows representing movies and 23 variables. These 23 variables range from the film name, year, and various ratings from different sources. This file will take the reader on a step by step tutorial on how to data wrangle.
 
 ### Packages needed
 
 packages that will be needed (run code below)
 
-```{r packages, exercise=TRUE}
+```{r packag, message = FALSE, warning = FALSE, exercise=TRUE}
 library(tidyverse) # Automatically loads ggplot2 and dplyr
 library(fivethirtyeight)
 ```
@@ -36,7 +36,7 @@ Five verbs for working with data in a data frame:
 - arrange(): sort rows (descending or ascending order, etc.) 
 - summarize(): aggregate data across rows (e.g., grouped means)
 ### Select
-*First, we will try to use the select function. Say you just wanted to know the name of the movie and the year of the film, and its rotten tomato score. You would write the pipline as below:* 
+*First, we will try to use the select function. Say you just wanted to know the name of the movie and the year of the film, and its rotten tomato score. You would write the pipeline as below:* 
 
 Run Code
 ```{r select, exercise=TRUE, exercise.lines = 5}
@@ -79,17 +79,17 @@ average_rating
 This produces an average rating out of a scale of 5 for each film.
 
 ### Arrange and Join 
-*If we then wanted to view the data to see what top 5 movies have the best rating. We would arrange the data in descending order, but first, we would like to combine the overall average data to the original data set and then view the top 5. there are various types of joins INNER JOIN gets all records that are common between both tables based on the supplied. LEFT JOIN gets all records from the LEFT linked and the related record from the right table, but if you have selected some columns from the RIGHT table, if there are no related records, these columns will contain NULL. RIGHT JOIN is like the above but gets all records in the RIGHT table. FULL JOIN gets all records from both tables and puts NULL in the columns where related records do not exist in the opposite table. For this exercise, we want to use left join to join the average rating table to the fandango table* 
+*If we then wanted to view the data to see what top 5 movies have the best rating. We would arrange the data in descending order, but first, we would like to combine the overall average data to the original data set and then view the top 5. There are various wasy to join data thourgh the use of joins. Types of joins: INNER JOIN-gets all records that are common between both tables based on the supplied. LEFT JOIN-gets all records from the LEFT linked and the related record from the right table, but if you have selected some columns from the RIGHT table, if there are no related records, these columns will contain NULL. RIGHT JOIN is like the above but gets all records in the RIGHT table. FULL JOIN-gets all records from both tables and puts NULL in the columns where related records do not exist in the opposite table. For this exercise, we want to use left join to join the average rating table to the fandango table* 
 
 *When using the arrange function alone, it will automatically arrange it in ascending order based on the parameters you give in the parenthesis. To arrange in descending order, You would add on the following code from the previous section. *
 
 Run Code
-```{r joinnarrange, exercise=TRUE, exercise.lines = 14}
+```{r oinnarrangee, exercise=TRUE, exercise.lines = 14}
 
 average_rating = fandango %>%
   mutate(overall_rating = ((rt_norm + rt_user_norm + metacritic_norm + metacritic_user_nom + imdb_norm)/5)) %>%
   select(film, overall_rating)
-
+# added code follows
 Top_moviess = fandango %>%
   left_join(average_rating, by = "film")
 
@@ -103,9 +103,9 @@ Tip_movies
 ```
 Displays the top 5 movies with respects to their overall average rating.
 
-### Summerize and Group by 
+### Summarize and Group by 
 Another step in data wrangling is the summarize and group by function. summarize() and group_by() allow us to make calculations and comparisons. summarize() (with or without group_by()) collapses the data into rows based on summary statistics.The important step in summarize() is specifying how we want to reduce the data to a single set of summary statistics (for example, by mean, median, max, IQR ). 
-*Let's say you wanted to group the movies by year to see which movies had better ratings, but to keep in nonbias, you also want to include the number of votes that year got total for each movie rating just for comparison.* 
+*Let's say you wanted to group the movies by year to see which movies had better ratings, but to keep in non-bias, you also want to include the number of votes that year got total for each movie rating just for comparison.* 
 Run Code
 ```{r summerize, exercise=TRUE, exercise.lines = 7}
 twoyears = fandango %>%
@@ -125,7 +125,7 @@ The IMDB rating is on a scale of 0-10. And while the year 2015 had four times as
 We wanted to see if the highest voted films and if that affects the difference between the two Fandango ratings. To do this:
 We used the mutate function to find the percent difference between the fandango stars rating and the fandango score.
 Because there are 23 variables, and most aren't needed for this, we selected only the film name, the number of stars the film had on its Fandango movie page, the Fandango rating value for the film, The number of user votes the film had on Fandango, and the new column, the percent difference. 
-We then used the arrange function to order the dataset in descending values from most voted movies. 
+We then used the arrange function to order the data set in descending values from most voted movies. 
 Finally, we used the top_n function to only see the top 10 most voted films.
 After this, we created a scatter plot to see a visualization of distribution. 
 
@@ -149,13 +149,13 @@ We noticed that all top 10 highest voted movies had a low difference, three of t
 
 ### Quiz
 
-*A short vocab quiz to help distinguish when to use join, inner join, and left join, as it can be confusing at times and I constanly am worrying if I chose the righ join for my data*
+*A short vocab quiz to help distinguish when to use join, inner join, and left join, as it can be confusing at times and I constantly am worrying if I chose the right join for my data*
 
 Some questions to verify that you understand the purposes of various base and recommended R packages:
 
 ```{r quiz}
 quiz(
-  question("Which Join Would not return values if the vlalues in table 1 do not match the Values in table 2?",
+  question("Which Join Would not return values if the values in table 1 do not match the Values in table 2?",
     answer("Left Join"),
     answer("Right Join"),
     answer("Inner Join", correct = TRUE),
